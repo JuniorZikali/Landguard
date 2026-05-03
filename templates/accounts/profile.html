@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+{% load crispy_forms_tags %}
+
+{% block title %}My Profile{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-4">
+        <div class="card mb-3">
+            <div class="card-body text-center">
+                <i class="bi bi-person-circle" style="font-size: 5rem; color: #1e3a5f;"></i>
+                <h4 class="mt-3 mb-0">{{ profile.full_name }}</h4>
+                <p class="text-muted small">{{ profile.user.email }}</p>
+                <span class="badge bg-secondary">{{ profile.get_role_display }}</span>
+                {% if profile.is_verified %}
+                    <span class="badge bg-success"><i class="bi bi-check-circle"></i> Verified</span>
+                {% else %}
+                    <span class="badge bg-warning text-dark"><i class="bi bi-exclamation-circle"></i> Unverified</span>
+                {% endif %}
+            </div>
+        </div>
+        <div class="card">
+            <div class="card-body">
+                <h6 class="text-muted small">National ID</h6>
+                <p class="deed-number mb-3">{{ profile.national_id }}</p>
+                <h6 class="text-muted small">Phone</h6>
+                <p class="mb-3">{{ profile.phone|default:"—" }}</p>
+                <h6 class="text-muted small">Member Since</h6>
+                <p class="mb-0">{{ profile.created_at|date:"d M Y" }}</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-body p-4">
+                <h4>Update Profile</h4>
+                <form method="post">
+                    {% csrf_token %}
+                    {{ form|crispy }}
+                    <button type="submit" class="btn btn-primary">Save Changes</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

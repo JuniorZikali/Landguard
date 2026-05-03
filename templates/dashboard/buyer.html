@@ -1,0 +1,83 @@
+{% extends "base.html" %}
+
+{% block title %}Buyer Dashboard{% endblock %}
+
+{% block content %}
+<h2 class="mb-1">Welcome, {{ profile.full_name }}</h2>
+<p class="text-muted mb-4">Buyer dashboard</p>
+
+<div class="row mb-4">
+    <div class="col-md-4">
+        <div class="stat-card">
+            <div class="stat-value">{{ my_verifications_count }}</div>
+            <div class="stat-label">Reports Generated</div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="stat-card" style="border-left-color: #dc3545;">
+            <div class="stat-value">{{ high_risk_warnings }}</div>
+            <div class="stat-label">HIGH-Risk Warnings Received</div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="stat-card" style="border-left-color: #198754;">
+            <div class="stat-value"><i class="bi bi-shield-check"></i></div>
+            <div class="stat-label">Protected by LandGuard</div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-6">
+        <div class="card mb-3">
+            <div class="card-body">
+                <h5>Get a Risk Report</h5>
+                <p class="text-muted small">
+                    Considering buying a property? Generate a fraud risk report
+                    with the deed number.
+                </p>
+                <a href="{% url 'verification:buyer_report' %}" class="btn btn-primary">
+                    <i class="bi bi-clipboard-check"></i> New Report
+                </a>
+            </div>
+        </div>
+        <div class="card mb-3">
+            <div class="card-body">
+                <h5>Quick Deed Check</h5>
+                <p class="text-muted small">
+                    Validate a title deed number's authenticity.
+                </p>
+                <a href="{% url 'verification:deed_check' %}" class="btn btn-outline-primary">
+                    <i class="bi bi-search"></i> Check Deed
+                </a>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header"><h5 class="mb-0">Recent Verifications</h5></div>
+            <div class="card-body p-0">
+                {% if recent_verifications %}
+                <table class="table mb-0">
+                    <thead><tr><th>Deed</th><th>Risk</th><th>Date</th></tr></thead>
+                    <tbody>
+                        {% for req in recent_verifications %}
+                        <tr>
+                            <td><small class="deed-number">{{ req.queried_deed_number }}</small></td>
+                            <td><span class="badge bg-{{ req.risk_badge_class }}">{{ req.risk_level }}</span></td>
+                            <td>{{ req.request_date|date:"d M" }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                <div class="card-footer text-center">
+                    <a href="{% url 'verification:my_verifications' %}" class="small">View all &rarr;</a>
+                </div>
+                {% else %}
+                <p class="text-center text-muted py-4 mb-0">No verifications yet.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

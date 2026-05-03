@@ -1,0 +1,106 @@
+{% extends "base.html" %}
+
+{% block title %}Home{% endblock %}
+
+{% block content %}
+<div class="row align-items-center mb-5 py-5">
+    <div class="col-lg-7">
+        <h1 class="display-4 fw-bold mb-3" style="color: #1e3a5f;">
+            Don't lose your savings to land fraud.
+        </h1>
+        <p class="lead text-muted mb-4">
+            Verify any property in Zimbabwe before you pay. LandGuard checks
+            title deeds, detects double-selling, and produces an instant fraud
+            risk report you can trust.
+        </p>
+        <div class="d-flex gap-3">
+            <a href="{% url 'verification:deed_check' %}" class="btn btn-primary btn-lg">
+                <i class="bi bi-search"></i> Check a Title Deed
+            </a>
+            {% if not user.is_authenticated %}
+            <a href="{% url 'accounts:signup' %}" class="btn btn-outline-secondary btn-lg">
+                Sign up free
+            </a>
+            {% else %}
+            <a href="{% url 'verification:buyer_report' %}" class="btn btn-outline-primary btn-lg">
+                Get Risk Report
+            </a>
+            {% endif %}
+        </div>
+    </div>
+    <div class="col-lg-5 text-center d-none d-lg-block">
+        <i class="bi bi-shield-check" style="font-size: 12rem; color: #1e3a5f; opacity: 0.15;"></i>
+    </div>
+</div>
+
+<h2 class="text-center mb-4">Three core protections</h2>
+<div class="row g-4 mb-5">
+    <div class="col-md-4">
+        <div class="feature-card">
+            <div class="feature-icon"><i class="bi bi-database-check"></i></div>
+            <h4>Property Registry</h4>
+            <p class="text-muted">
+                A centralised, searchable database of verified properties with
+                full ownership and transaction history.
+            </p>
+            <a href="{% url 'properties:list' %}" class="btn btn-sm btn-outline-primary">
+                Browse Registry &rarr;
+            </a>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="feature-card">
+            <div class="feature-icon"><i class="bi bi-file-earmark-check"></i></div>
+            <h4>Title Deed Checker</h4>
+            <p class="text-muted">
+                Validate any title deed number, detect mismatched details, and
+                catch forgeries before you part with money.
+            </p>
+            <a href="{% url 'verification:deed_check' %}" class="btn btn-sm btn-outline-primary">
+                Check Deed &rarr;
+            </a>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="feature-card">
+            <div class="feature-icon"><i class="bi bi-clipboard-check"></i></div>
+            <h4>Buyer Risk Report</h4>
+            <p class="text-muted">
+                On-demand fraud risk reports combining ownership checks,
+                duplicate-listing detection, and price-anomaly analysis.
+            </p>
+            {% if user.is_authenticated %}
+            <a href="{% url 'verification:buyer_report' %}" class="btn btn-sm btn-outline-primary">
+                Get Report &rarr;
+            </a>
+            {% else %}
+            <a href="{% url 'accounts:signup' %}" class="btn btn-sm btn-outline-primary">
+                Sign up to use &rarr;
+            </a>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<div class="row align-items-center bg-light rounded-3 p-5 mt-5">
+    <div class="col-md-8">
+        <h3>Suspect fraud? Report it.</h3>
+        <p class="text-muted mb-0">
+            If you've encountered suspicious land-selling activity, report it
+            to LandGuard. Reports are reviewed by registrars and contribute to
+            our growing intelligence on land barons.
+        </p>
+    </div>
+    <div class="col-md-4 text-md-end mt-3 mt-md-0">
+        {% if user.is_authenticated %}
+        <a href="{% url 'verification:fraud_report' %}" class="btn btn-danger">
+            <i class="bi bi-flag"></i> Report Fraud
+        </a>
+        {% else %}
+        <a href="{% url 'accounts:signup' %}" class="btn btn-danger">
+            Sign up to report
+        </a>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

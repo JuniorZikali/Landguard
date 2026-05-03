@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+
+{% block title %}My Verifications{% endblock %}
+
+{% block content %}
+<h2 class="mb-1">My Verification History</h2>
+<p class="text-muted mb-4">All the property risk reports you've requested.</p>
+
+<div class="card">
+    <div class="card-body p-0">
+        {% if requests %}
+        <table class="table mb-0">
+            <thead class="table-light">
+                <tr>
+                    <th>Date</th>
+                    <th>Deed Number</th>
+                    <th>Risk</th>
+                    <th>Score</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for req in requests %}
+                <tr>
+                    <td>{{ req.request_date|date:"d M Y, H:i" }}</td>
+                    <td><span class="deed-number">{{ req.queried_deed_number }}</span></td>
+                    <td><span class="badge bg-{{ req.risk_badge_class }}">{{ req.risk_level }}</span></td>
+                    <td>{{ req.risk_score }}/100</td>
+                    <td>
+                        {% if req.property %}
+                        <a href="{% url 'properties:detail' req.property.pk %}" class="btn btn-sm btn-outline-primary">View Property</a>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <div class="text-center py-4 text-muted">
+            <p class="mb-3">You haven't requested any verifications yet.</p>
+            <a href="{% url 'verification:buyer_report' %}" class="btn btn-primary">Get Your First Report</a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,116 @@
+{% extends "base.html" %}
+
+{% block title %}Registrar Dashboard{% endblock %}
+
+{% block content %}
+<h2 class="mb-1">Registrar Dashboard</h2>
+<p class="text-muted mb-4">System overview · {{ profile.full_name }}</p>
+
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="stat-card">
+            <div class="stat-value">{{ total_properties }}</div>
+            <div class="stat-label">Total Properties</div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="stat-card" style="border-left-color: #dc3545;">
+            <div class="stat-value">{{ flagged_properties }}</div>
+            <div class="stat-label">Flagged / Disputed</div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="stat-card">
+            <div class="stat-value">{{ total_transactions }}</div>
+            <div class="stat-label">Total Transactions</div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="stat-card" style="border-left-color: #ffc107;">
+            <div class="stat-value">{{ high_risk_transactions }}</div>
+            <div class="stat-label">High-Risk Transactions</div>
+        </div>
+    </div>
+</div>
+
+<div class="row mb-4">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between">
+                <h5 class="mb-0">Recent Transactions</h5>
+                <a href="{% url 'transactions:list' %}" class="small">View all</a>
+            </div>
+            <div class="card-body p-0">
+                {% if recent_transactions %}
+                <table class="table mb-0 small">
+                    <thead><tr><th>Property</th><th>Seller</th><th>Risk</th></tr></thead>
+                    <tbody>
+                        {% for txn in recent_transactions %}
+                        <tr>
+                            <td><a href="{% url 'transactions:detail' txn.pk %}">Stand {{ txn.related_property.stand_number }}</a></td>
+                            <td>{{ txn.seller.profile.full_name|truncatechars:20 }}</td>
+                            <td><span class="badge bg-{{ txn.risk_badge_class }}">{{ txn.risk_level }}</span></td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                {% else %}
+                <p class="text-center text-muted py-4 mb-0">No transactions yet.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header"><h5 class="mb-0">Recent Risk Flags</h5></div>
+            <div class="card-body p-0">
+                {% if recent_flags %}
+                <ul class="list-group list-group-flush">
+                    {% for flag in recent_flags %}
+                    <li class="list-group-item">
+                        <div class="d-flex justify-content-between">
+                            <span class="small"><strong>{{ flag.get_flag_type_display }}</strong><br>
+                            <small class="text-muted">{{ flag.transaction.related_property }}</small></span>
+                            <span class="badge bg-{% if flag.severity == 'HIGH' %}danger{% elif flag.severity == 'MEDIUM' %}warning{% else %}info{% endif %}">{{ flag.severity }}</span>
+                        </div>
+                    </li>
+                    {% endfor %}
+                </ul>
+                {% else %}
+                <p class="text-center text-muted py-4 mb-0">No flags raised.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-4">
+        <a href="{% url 'properties:add' %}" class="card text-decoration-none">
+            <div class="card-body text-center py-4">
+                <i class="bi bi-plus-circle" style="font-size: 2.5rem; color: #1e3a5f;"></i>
+                <h5 class="mt-2">Add Property</h5>
+                <p class="text-muted small mb-0">Register a new property</p>
+            </div>
+        </a>
+    </div>
+    <div class="col-md-4">
+        <a href="/admin/" class="card text-decoration-none">
+            <div class="card-body text-center py-4">
+                <i class="bi bi-gear" style="font-size: 2.5rem; color: #1e3a5f;"></i>
+                <h5 class="mt-2">Admin Panel</h5>
+                <p class="text-muted small mb-0">Full system administration</p>
+            </div>
+        </a>
+    </div>
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-body text-center py-4">
+                <i class="bi bi-flag" style="font-size: 2.5rem; color: #dc3545;"></i>
+                <h5 class="mt-2">{{ open_fraud_reports }} Open Reports</h5>
+                <p class="text-muted small mb-0">Awaiting investigation</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

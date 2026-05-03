@@ -1,0 +1,87 @@
+{% extends "base.html" %}
+
+{% block title %}Transaction #{{ transaction.id }}{% endblock %}
+
+{% block content %}
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="{% url 'transactions:list' %}">Transactions</a></li>
+        <li class="breadcrumb-item active">#{{ transaction.id }}</li>
+    </ol>
+</nav>
+
+<div class="risk-banner risk-{{ transaction.risk_level|lower }}">
+    <h2>{{ transaction.get_risk_level_display }}</h2>
+    <p class="mb-0">Risk score: <strong>{{ transaction.risk_score }} / 100</strong></p>
+</div>
+
+<div class="row">
+    <div class="col-md-7">
+        <div class="card mb-4">
+            <div class="card-header"><h5 class="mb-0">Transaction Details</h5></div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-sm-6">
+                        <h6 class="text-muted small">Property</h6>
+                        <p>
+                            <a href="{% url 'properties:detail' transaction.related_property.pk %}">
+                                Stand {{ transaction.related_property.stand_number }}, {{ transaction.related_property.suburb }}
+                            </a>
+                            <br><small class="deed-number">{{ transaction.related_property.title_deed_number }}</small>
+                        </p>
+                        <h6 class="text-muted small mt-3">Listed Price</h6>
+                        <p>USD {{ transaction.listed_price|floatformat:2 }}</p>
+                        <h6 class="text-muted small mt-3">Status</h6>
+                        <p><span class="badge bg-secondary">{{ transaction.get_status_display }}</span></p>
+                    </div>
+                    <div class="col-sm-6">
+                        <h6 class="text-muted small">Seller</h6>
+                        <p>{{ transaction.seller.profile.full_name }}<br>
+                           <small class="text-muted">ID: {{ transaction.seller.profile.national_id }}</small></p>
+                        <h6 class="text-muted small mt-3">Buyer</h6>
+                        <p>{% if transaction.buyer %}{{ transaction.buyer.profile.full_name }}
+                           {% else %}<span class="text-muted">Not yet assigned</span>{% endif %}</p>
+                        <h6 class="text-muted small mt-3">Listed</h6>
+                        <p>{{ transaction.listed_at|date:"d M Y, H:i" }}</p>
+                    </div>
+                </div>
+                {% if transaction.notes %}
+                <h6 class="text-muted small mt-3">Notes</h6>
+                <p>{{ transaction.notes }}</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-5">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="bi bi-exclamation-triangle"></i> Risk Flags
+                    <span class="badge bg-secondary float-end">{{ transaction.risk_flags.count }}</span>
+                </h5>
+            </div>
+            <div class="card-body">
+                {% if transaction.risk_flags.all %}
+                    {% for flag in transaction.risk_flags.all %}
+                    <div class="flag-card severity-{{ flag.severity|lower }}">
+                        <div class="d-flex justify-content-between mb-2">
+                            <strong>{{ flag.get_flag_type_display }}</strong>
+                            <span class="badge bg-{% if flag.severity == 'HIGH' %}danger{% elif flag.severity == 'MEDIUM' %}warning{% else %}info{% endif %}">
+                                {{ flag.severity }}
+                            </span>
+                        </div>
+                        <p class="mb-0 small">{{ flag.description }}</p>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                <div class="text-center py-3">
+                    <i class="bi bi-check-circle text-success" style="font-size: 3rem;"></i>
+                    <p class="mt-2 mb-0 text-muted">No risk flags. This transaction looks clean.</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

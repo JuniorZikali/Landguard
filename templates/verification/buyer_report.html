@@ -1,0 +1,164 @@
+{% extends "base.html" %}
+
+{% block title %}Buyer Risk Report{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-9">
+        <h2 class="mb-2"><i class="bi bi-clipboard-check"></i> Buyer Fraud Risk Report</h2>
+        <p class="text-muted mb-4">
+            Get a comprehensive fraud risk assessment for any property before
+            you pay. We combine deed authenticity, ownership verification,
+            duplicate-listing detection, and price-anomaly analysis.
+        </p>
+        
+        <div class="card mb-4">
+            <div class="card-body p-4">
+                <form method="get">
+                    <div class="row g-3">
+                        <div class="col-12">
+                            <label class="form-label fw-bold">Title Deed Number *</label>
+                            {{ form.deed_number }}
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Seller's claimed national ID</label>
+                            {{ form.claimed_owner_id }}
+                            <small class="text-muted">Helps detect impersonation</small>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Property address as told to you</label>
+                            {{ form.claimed_address }}
+                            <small class="text-muted">Helps detect address fraud</small>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-primary mt-3">
+                        <i class="bi bi-shield-check"></i> Generate Risk Report
+                    </button>
+                </form>
+            </div>
+        </div>
+        
+        {% if report %}
+        <div class="risk-banner risk-{{ report.risk_level|lower }}">
+            <h2>{{ report.risk_level }} RISK</h2>
+            <p class="lead mb-2">{{ report.summary }}</p>
+            <p class="mb-0">
+                <small>
+                    Risk score: <strong>{{ report.risk_score }} / 100</strong> ·
+                    Authenticity: <strong>{{ report.authenticity_score }} / 100</strong>
+                </small>
+            </p>
+        </div>
+        
+        <div class="card mb-4">
+            <div class="card-header"><h5 class="mb-0">Deed Verification Results</h5></div>
+            <div class="card-body">
+                <p>
+                    <strong>Deed:</strong> <span class="deed-number">{{ report.deed_number }}</span>
+                    {% if report.is_valid_format %}
+                        <span class="badge bg-success">Valid format</span>
+                    {% else %}
+                        <span class="badge bg-danger">Invalid format</span>
+                    {% endif %}
+                    {% if report.exists_in_registry %}
+                        <span class="badge bg-success">In registry</span>
+                    {% else %}
+                        <span class="badge bg-danger">Not in registry</span>
+                    {% endif %}
+                </p>
+                {% if report.deed_findings %}
+                <h6 class="text-muted small mt-3">Deed Findings</h6>
+                <ul class="mb-0">
+                    {% for f in report.deed_findings %}<li>{{ f }}</li>{% endfor %}
+                </ul>
+                {% endif %}
+            </div>
+        </div>
+        
+        {% if report.property %}
+        <div class="card mb-4">
+            <div class="card-header"><h5 class="mb-0">Registered Property Details</h5></div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6 class="text-muted small">Address</h6>
+                        <p>{{ report.property.full_address }}</p>
+                        <h6 class="text-muted small">Registered Owner</h6>
+                        <p>{{ report.property.registered_owner.profile.full_name }}<br>
+                           <small class="text-muted">ID: {{ report.property.registered_owner.profile.national_id }}</small></p>
+                    </div>
+                    <div class="col-md-6">
+                        <h6 class="text-muted small">Type</h6>
+                        <p>{{ report.property.get_property_type_display }} · {{ report.property.size_sqm }} m²</p>
+                        <h6 class="text-muted small">Estimated Value</h6>
+                        <p>USD {{ report.property.market_value_estimate|floatformat:2 }}</p>
+                        <h6 class="text-muted small">Status</h6>
+                        <p><span class="badge bg-secondary">{{ report.property.get_status_display }}</span></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+        
+        {% if report.active_transactions %}
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    Active Listings on This Property
+                    <span class="badge bg-{% if report.active_transactions|length > 1 %}danger{% else %}info{% endif %}">
+                        {{ report.active_transactions|length }}
+                    </span>
+                </h5>
+            </div>
+            <div class="card-body">
+                {% if report.active_transactions|length > 1 %}
+                <div class="alert alert-danger mb-3">
+                    <i class="bi bi-exclamation-triangle-fill"></i>
+                    <strong>Warning:</strong> This property has multiple active listings.
+                    This is a hallmark of double-selling fraud.
+                </div>
+                {% endif %}
+                <table class="table mb-0">
+                    <thead><tr><th>Seller</th><th>Listed Price</th><th>Risk</th><th>Listed</th></tr></thead>
+                    <tbody>
+                        {% for txn in report.active_transactions %}
+                        <tr>
+                            <td>{{ txn.seller.profile.full_name }}</td>
+                            <td>USD {{ txn.listed_price|floatformat:2 }}</td>
+                            <td><span class="badge bg-{{ txn.risk_badge_class }}">{{ txn.risk_level }}</span></td>
+                            <td>{{ txn.listed_at|date:"d M Y" }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        {% endif %}
+        
+        {% if report.transaction_flags %}
+        <div class="card">
+            <div class="card-header"><h5 class="mb-0">Detailed Risk Flags</h5></div>
+            <div class="card-body">
+                {% for f in report.transaction_flags %}
+                <div class="flag-card severity-{{ f.severity|lower }}">
+                    <div class="d-flex justify-content-between mb-2">
+                        <strong>{{ f.flag_type }}</strong>
+                        <span class="badge bg-{% if f.severity == 'HIGH' %}danger{% elif f.severity == 'MEDIUM' %}warning{% else %}info{% endif %}">{{ f.severity }}</span>
+                    </div>
+                    <p class="mb-0 small">{{ f.description }}</p>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+        
+        <div class="alert alert-warning mt-4">
+            <strong><i class="bi bi-info-circle"></i> Important:</strong>
+            This report is a decision aid based on data in the LandGuard registry.
+            Always perform independent verification at the Deeds Office before
+            making payment, even if the report shows LOW risk.
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

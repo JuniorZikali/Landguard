@@ -1,0 +1,83 @@
+{% extends "base.html" %}
+
+{% block title %}Property Registry{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h2 class="mb-1">Property Registry</h2>
+        <p class="text-muted mb-0">All properties registered in the LandGuard system.</p>
+    </div>
+    {% if user.is_authenticated and user.profile.is_registrar_or_admin %}
+    <a href="{% url 'properties:add' %}" class="btn btn-primary">
+        <i class="bi bi-plus-circle"></i> Add Property
+    </a>
+    {% endif %}
+</div>
+
+<form method="get" class="mb-4">
+    <div class="input-group">
+        {{ form.query }}
+        <button class="btn btn-primary" type="submit">
+            <i class="bi bi-search"></i> Search
+        </button>
+    </div>
+</form>
+
+{% if page_obj %}
+<div class="row g-3">
+    {% for prop in page_obj %}
+    <div class="col-md-6 col-lg-4">
+        <div class="property-card">
+            <div class="d-flex justify-content-between align-items-start">
+                <span class="deed-number">{{ prop.title_deed_number }}</span>
+                <span class="badge bg-{% if prop.status == 'active' %}success{% elif prop.status == 'flagged' or prop.status == 'disputed' %}danger{% else %}secondary{% endif %}">
+                    {{ prop.get_status_display }}
+                </span>
+            </div>
+            <h5 class="mt-2 mb-1">Stand {{ prop.stand_number }}</h5>
+            <p class="text-muted small mb-2">
+                <i class="bi bi-geo-alt"></i> {{ prop.suburb }}, {{ prop.city }}
+            </p>
+            <p class="mb-2 small">
+                <strong>{{ prop.get_property_type_display }}</strong> · {{ prop.size_sqm }} m²
+            </p>
+            <p class="text-muted small mb-3">
+                Owner: {{ prop.registered_owner.profile.full_name }}
+            </p>
+            <a href="{% url 'properties:detail' prop.pk %}" class="btn btn-sm btn-outline-primary w-100">
+                View Details
+            </a>
+        </div>
+    </div>
+    {% empty %}
+    <div class="col-12">
+        <div class="alert alert-info">
+            No properties match your search. The registry may be empty —
+            ask a registrar to add properties.
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+{% if page_obj.has_other_pages %}
+<nav class="mt-4">
+    <ul class="pagination justify-content-center">
+        {% if page_obj.has_previous %}
+        <li class="page-item">
+            <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if form.cleaned_data.query %}&query={{ form.cleaned_data.query }}{% endif %}">Previous</a>
+        </li>
+        {% endif %}
+        <li class="page-item active">
+            <span class="page-link">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+        </li>
+        {% if page_obj.has_next %}
+        <li class="page-item">
+            <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if form.cleaned_data.query %}&query={{ form.cleaned_data.query }}{% endif %}">Next</a>
+        </li>
+        {% endif %}
+    </ul>
+</nav>
+{% endif %}
+{% endif %}
+{% endblock %}

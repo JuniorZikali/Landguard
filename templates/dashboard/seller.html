@@ -1,0 +1,78 @@
+{% extends "base.html" %}
+
+{% block title %}Seller Dashboard{% endblock %}
+
+{% block content %}
+<h2 class="mb-1">Welcome, {{ profile.full_name }}</h2>
+<p class="text-muted mb-4">Seller dashboard</p>
+
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="stat-card">
+            <div class="stat-value">{{ my_properties }}</div>
+            <div class="stat-label">My Properties</div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="stat-card">
+            <div class="stat-value">{{ my_listings }}</div>
+            <div class="stat-label">Total Listings</div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="stat-card" style="border-left-color: #198754;">
+            <div class="stat-value">{{ my_active_listings }}</div>
+            <div class="stat-label">Active Listings</div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="stat-card" style="border-left-color: #dc3545;">
+            <div class="stat-value">{{ my_flagged_listings }}</div>
+            <div class="stat-label">Flagged Listings</div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-5">
+        <div class="card">
+            <div class="card-body">
+                <h5>List a New Property</h5>
+                <p class="text-muted small">
+                    Create a new listing. Our system will automatically check
+                    for fraud indicators and assign a risk score.
+                </p>
+                <a href="{% url 'transactions:create' %}" class="btn btn-primary">
+                    <i class="bi bi-plus-circle"></i> New Listing
+                </a>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-7">
+        <div class="card">
+            <div class="card-header"><h5 class="mb-0">Recent Listings</h5></div>
+            <div class="card-body p-0">
+                {% if recent_listings %}
+                <table class="table mb-0">
+                    <thead><tr><th>Property</th><th>Price</th><th>Risk</th></tr></thead>
+                    <tbody>
+                        {% for txn in recent_listings %}
+                        <tr>
+                            <td><a href="{% url 'transactions:detail' txn.pk %}">Stand {{ txn.related_property.stand_number }}</a></td>
+                            <td>USD {{ txn.listed_price|floatformat:0 }}</td>
+                            <td><span class="badge bg-{{ txn.risk_badge_class }}">{{ txn.risk_level }}</span></td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                <div class="card-footer text-center">
+                    <a href="{% url 'transactions:list' %}" class="small">View all &rarr;</a>
+                </div>
+                {% else %}
+                <p class="text-center text-muted py-4 mb-0">No listings yet.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
